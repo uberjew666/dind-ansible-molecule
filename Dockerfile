@@ -8,7 +8,9 @@ RUN apt-get update && \
 
 RUN pip3 install --upgrade pip
 
-RUN pip3 install -r requirements.txt
+COPY requirements.txt /tmp/
+
+RUN pip3 install -r /tmp/requirements.txt
 
 RUN apt-get purge --autoremove -y libc6-dev gcc libssl-dev python3-dev python3-wheel && \
     apt-get clean && \
