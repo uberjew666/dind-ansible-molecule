@@ -1,26 +1,29 @@
-FROM qwe1/debdocker:20.10
+# ==============================================================================
+# Build process
+# ------------------------------------------------------------------------------
+FROM public.ecr.aws/docker/library/python:3.12.9-alpine3.21 AS build
+ENV PATH="$PATH:/app/bin/"
+ENV PYTHONUSERBASE="/app"
 
-ENV umask=022
+WORKDIR /app/
+COPY app /app/
 
-RUN apt-get update && \
-    apt-get upgrade -y && \
-    apt-get install -y --no-install-recommends python3 libc6-dev python3-pip gcc git python3-dev python3-setuptools python3-wheel libssl-dev openssh-client
+# Adding dependencies
+RUN pip3 install --user --no-cache-dir --prefer-binary -r requirements.txt
 
-RUN pip3 install --upgrade pip
+# ==============================================================================
+# Component specific
+# ------------------------------------------------------------------------------
+FROM public.ecr.aws/docker/library/python:3.12.9-alpine3.21
+ENV PATH="$PATH:/app/bin/"
+ENV PYTHONUSERBASE="/app"
+COPY --from=build /app /app
 
-COPY requirements.txt /tmp/
-
-RUN pip3 install -r /tmp/requirements.txt
-
-RUN apt-get purge --autoremove -y libc6-dev gcc libssl-dev python3-dev python3-wheel && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /root/.cache
-
-RUN groupadd -g 998 docker
-
-RUN useradd -m -s /bin/bash user && \
-    gpasswd -a user docker
+RUN addgroup --gid "998" --system "docker" && \
+    adduser -S "user" -G "docker"
 
 USER user
 
-CMD ["bash"]
+ENTRYPOINT ["molecule"]
+
+WORKDIR /code/
