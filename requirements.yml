@@ -1,0 +1,10 @@
+---
+collections:
+  - name: 'community.general'
+    version: 10.1.0
+  - name: 'community.docker'
+    version: 4.1.0
+  - name: 'ansible.posix'
+    version: 1.6.2
+  - name: 'sivel.toiletwater'
+    version: 0.0.20
